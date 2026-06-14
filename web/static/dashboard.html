@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Dashboard · Chess Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/app.css" />
+    <link rel="stylesheet" href="/styles/board.css" />
+  </head>
+  <body>
+    <header data-nav></header>
+
+    <main class="wrap" data-app hidden>
+      <h1 style="font-size:30px" data-greeting>Hi!</h1>
+
+      <section class="card" style="margin-bottom:16px">
+        <h2 style="font-size:20px">My progress</h2>
+        <div data-progress><p class="muted" style="margin:0">Loading…</p></div>
+      </section>
+
+      <section class="card">
+        <h2 style="font-size:20px">My tasks</h2>
+        <ul class="list" data-tasks><li class="muted">Loading…</li></ul>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <h2 style="font-size:20px">My training groups</h2>
+        <ul class="list" data-groups><li class="muted">Loading…</li></ul>
+      </section>
+
+      <div style="margin-top:18px">
+        <a class="btn primary" href="/play.html">Play online</a>
+      </div>
+    </main>
+
+    <script type="module" src="/assets/dashboard.js"></script>
+  </body>
+</html>

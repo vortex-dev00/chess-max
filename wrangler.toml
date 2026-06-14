@@ -1,0 +1,36 @@
+name = "chess-club-v2"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Built frontend (public/) is produced by `node build.mjs` and served as assets.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 — run `wrangler d1 create chess-club-v2-db` and paste the id here.
+[[d1_databases]]
+binding = "DB"
+database_name = "chess-club-v2-db"
+database_id = "88b4e029-8ab4-4a48-920a-eb3307772f40"
+
+# Durable Object: one instance per live game room.
+[[durable_objects.bindings]]
+name = "GAME_ROOM"
+class_name = "GameRoom"
+
+# Durable Object: one instance per group, for that group's live chat.
+[[durable_objects.bindings]]
+name = "GROUP_CHAT"
+class_name = "GroupChat"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GameRoom"]   # free plan requires SQLite-backed DOs
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["GroupChat"]
+
+[vars]
+ENVIRONMENT = "development"

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena · Chess Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/app.css" />
+  </head>
+  <body>
+    <header data-nav></header>
+
+    <main class="wrap" data-app hidden>
+      <h1 style="font-size:30px; margin-bottom:2px">Arena</h1>
+      <p class="muted" style="margin-top:0">Challenge other players to rated games and climb the ratings.</p>
+
+      <section class="card" style="margin-bottom:16px">
+        <div class="spread">
+          <div><div class="subtle">Your rating</div><div class="elo-big" data-my-elo>—</div></div>
+          <div data-my-rank class="subtle"></div>
+        </div>
+      </section>
+
+      <section class="card" data-challenges-card style="margin-bottom:16px" hidden>
+        <h2 style="font-size:18px">Challenges</h2>
+        <div data-challenges></div>
+      </section>
+
+      <section class="card" style="margin-bottom:16px">
+        <div class="spread">
+          <h2 style="font-size:18px; margin:0">Tournaments</h2>
+          <button class="btn primary sm" data-host hidden>+ Host tournament</button>
+        </div>
+
+        <div class="card" data-host-form hidden style="margin-top:12px; background:var(--panel-2)">
+          <div class="grid two" style="margin-bottom:10px">
+            <label class="field" style="margin:0"><span>Name</span><input data-t-name placeholder="Club Championship" /></label>
+            <label class="field" style="margin:0"><span>Format</span>
+              <select data-t-format>
+                <option value="knockout">Single-elimination (bracket)</option>
+                <option value="roundrobin">Round-robin (all play all)</option>
+                <option value="swiss">Swiss (paired by score)</option>
+              </select>
+            </label>
+          </div>
+          <label class="field" data-t-rounds-wrap hidden><span>Rounds (Swiss, optional)</span><input data-t-rounds type="number" min="1" max="15" placeholder="auto" /></label>
+          <label class="field"><span>Who can see &amp; join?</span>
+            <select data-t-audience>
+              <option value="group">A specific group</option>
+              <option value="kids">Specific kids</option>
+              <option value="all">Everyone</option>
+            </select>
+          </label>
+          <label class="field" data-t-group-wrap><span>Group</span><select data-t-group></select></label>
+          <label class="field" data-t-kids-wrap hidden><span>Kids — Ctrl/Cmd-click to pick several</span><select data-t-kids multiple size="6"></select></label>
+          <div class="row"><button class="btn primary sm" data-t-create>Create</button><button class="btn sm ghost" data-host-cancel>Cancel</button></div>
+        </div>
+
+        <ul class="list" data-tournaments style="margin-top:12px"></ul>
+      </section>
+
+      <section class="card" style="margin-bottom:16px">
+        <h2 style="font-size:18px">Ratings</h2>
+        <p class="subtle" style="margin-bottom:12px">Challenge anyone to a rated game.</p>
+        <ul class="list" data-leaderboard></ul>
+      </section>
+
+      <section class="card">
+        <h2 style="font-size:18px">Your recent games</h2>
+        <ul class="list" data-history></ul>
+      </section>
+    </main>
+
+    <script type="module" src="/assets/arena.js"></script>
+  </body>
+</html>
