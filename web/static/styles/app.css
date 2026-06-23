@@ -277,17 +277,38 @@ body::after {
 }
 @keyframes drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(0,-4%,0) scale(1.06); } }
 
-/* frosted glass surfaces */
-header[data-nav] {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(11,11,12,.62); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+/* solid surfaces (glassmorphism removed) — only buttons are see-through now */
+header[data-nav] { position: sticky; top: 0; z-index: 50; background: var(--bg-soft); }
+
+/* ── see-through GLASS buttons ── */
+.btn {
+  position: relative; overflow: hidden;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .16);
+  -webkit-backdrop-filter: blur(9px) saturate(1.3); backdrop-filter: blur(9px) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 8px 22px -16px rgba(0, 0, 0, .85);
 }
-.card, .cal, .board-wrap {
-  background: var(--glass); border-color: var(--glass-line);
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 24px 60px -38px rgba(0,0,0,.95);
+.btn:hover { background: rgba(255, 255, 255, .11); border-color: rgba(255, 255, 255, .34); }
+/* light sheen that sweeps across on hover */
+.btn::after {
+  content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 55%; pointer-events: none;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .22), transparent);
+  transform: translateX(-200%) skewX(-18deg); transition: transform .6s ease;
 }
-.overlay .card { background: rgba(18,18,21,.78); }
+.btn:hover::after { transform: translateX(360%) skewX(-18deg); }
+.btn.primary {
+  background: rgba(255, 255, 255, .17); color: #fff; border-color: rgba(255, 255, 255, .5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 0 24px -10px rgba(255, 255, 255, .55);
+}
+.btn.primary:hover { background: rgba(255, 255, 255, .27); }
+.btn.danger { background: rgba(219, 122, 114, .10); border-color: rgba(219, 122, 114, .42); color: var(--bad); }
+.btn.danger:hover { background: rgba(219, 122, 114, .18); border-color: var(--bad); }
+
+/* playful brand mark */
+.brand-mark { transition: transform .3s ease; }
+.brand:hover .brand-mark { transform: rotate(-12deg) scale(1.12); }
+
+.overlay .card { background: #161619; }
 
 /* motion (respects reduced-motion) */
 @media (prefers-reduced-motion: no-preference) {
