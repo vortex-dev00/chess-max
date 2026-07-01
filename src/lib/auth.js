@@ -64,7 +64,18 @@ async function overRateLimit(request, env) {
   }
 }
 
+// Memoised per request: the router's approval gate and the route handler both
+// ask for the user, and this keeps that to a single session query.
+const userCache = new WeakMap();
+
 export async function currentUser(request, env) {
+  if (userCache.has(request)) return userCache.get(request);
+  const promise = lookupUser(request, env);
+  userCache.set(request, promise);
+  return promise;
+}
+
+async function lookupUser(request, env) {
   const token = readCookie(request);
   if (!token) return null;
   const row = await env.DB.prepare(
