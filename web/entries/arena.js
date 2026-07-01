@@ -148,7 +148,7 @@ function renderChallenges(c) {
 function renderHistory(games) {
   $("[data-history]").replaceChildren(...(games.length ? games.map((g) => {
     const tag = g.result === "win" ? el("span.tag.good", {}, "Win")
-      : g.result === "loss" ? el("span.tag", { style: "color:var(--bad); border-color:#4a2a2a" }, "Loss")
+      : g.result === "loss" ? el("span.tag", { style: "color:var(--bad); border-color:var(--bad-line)" }, "Loss")
       : el("span.tag", {}, "Draw");
     const delta = g.delta == null ? "" : el("span.elo-delta", { class: `elo-delta ${g.delta >= 0 ? "up" : "down"}` },
       `${g.delta >= 0 ? "+" : ""}${g.delta}`);
