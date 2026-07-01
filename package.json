@@ -7,8 +7,12 @@
     "build": "node build.mjs",
     "dev": "node build.mjs --watch & wrangler dev",
     "deploy": "node build.mjs && wrangler deploy",
-    "db:init": "wrangler d1 execute chess-club-v2-db --local --file schema/0001_init.sql",
-    "db:init:remote": "wrangler d1 execute chess-club-v2-db --remote --file schema/0001_init.sql"
+    "db:migrate": "node tools/migrate.mjs",
+    "db:migrate:remote": "node tools/migrate.mjs --remote",
+    "db:seed": "wrangler d1 execute chess-club-v2-db --local --file schema/seed_puzzles.sql",
+    "db:seed:remote": "wrangler d1 execute chess-club-v2-db --remote --file schema/seed_puzzles.sql",
+    "db:init": "node tools/migrate.mjs",
+    "db:init:remote": "node tools/migrate.mjs --remote"
   },
   "dependencies": {
     "chess.js": "^1.0.0"

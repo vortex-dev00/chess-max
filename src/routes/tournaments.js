@@ -157,8 +157,12 @@ export async function startTournament(request, env, id) {
     pairs = swissPairing(ids.map((u) => ({ id: u, score: 0 })), new Set());
   }
 
-  await env.DB.prepare("UPDATE tournaments SET status = 'active', rounds_total = ?, current_round = 1 WHERE id = ?")
-    .bind(roundsTotal, id).run();
+  // Guarded transition: only one caller can flip 'open' → 'active', so two
+  // simultaneous "start" clicks can't both seed the bracket.
+  const started = await env.DB.prepare(
+    "UPDATE tournaments SET status = 'active', rounds_total = ?, current_round = 1 WHERE id = ? AND status = 'open'",
+  ).bind(roundsTotal, id).run();
+  if (!started.meta.changes) return error("Already started.");
   await createRound(env, id, 1, pairs);
   return ok();
 }
@@ -214,6 +218,13 @@ export async function getTournament(request, env, id) {
 /* ── internals ── */
 
 async function createRound(env, tid, round, pairs) {
+  // Idempotent: if this round was already built (e.g. a concurrent reconcile got
+  // here first), don't create a second set of games/matches for it.
+  const existing = await env.DB.prepare(
+    "SELECT 1 FROM tournament_matches WHERE tournament_id = ? AND round = ? LIMIT 1",
+  ).bind(tid, round).first();
+  if (existing) return;
+
   const now = Date.now();
   for (let slot = 0; slot < pairs.length; slot++) {
     let [a, b] = pairs[slot];
@@ -259,8 +270,13 @@ async function reconcile(env, t) {
     else if (g.winner === "black") winnerId = m.black_id;
     else if (t.format === "knockout") winnerId = await higherElo(env, m.white_id, m.black_id);  // draws can't advance
 
-    await env.DB.prepare("UPDATE tournament_matches SET status='finished', winner_id=?, result=? WHERE id=?")
-      .bind(winnerId, result, m.id).run();
+    // Guarded finish: only the request that actually flips this match to
+    // 'finished' gets to award the points, so concurrent reconciles can't
+    // double-count scores.
+    const done = await env.DB.prepare(
+      "UPDATE tournament_matches SET status='finished', winner_id=?, result=? WHERE id=? AND status!='finished'",
+    ).bind(winnerId, result, m.id).run();
+    if (!done.meta.changes) continue;
 
     if (result === "draw" && t.format !== "knockout") {
       await bumpScore(env, t.id, m.white_id, 0.5);
@@ -279,6 +295,15 @@ async function reconcile(env, t) {
 
 async function advance(env, t) {
   const round = t.current_round;
+  // Claim the advance: only the request that actually moves current_round
+  // forward proceeds to build the next round (or finish). A concurrent
+  // reconcile that also saw the round complete bails out here, so rounds are
+  // never seeded twice.
+  const claim = await env.DB.prepare(
+    "UPDATE tournaments SET current_round = ? WHERE id = ? AND current_round = ?",
+  ).bind(round + 1, t.id, round).run();
+  if (!claim.meta.changes) return;
+
   if (t.format === "knockout") {
     const ms = (await env.DB.prepare(
       "SELECT winner_id FROM tournament_matches WHERE tournament_id=? AND round=? ORDER BY slot",
@@ -286,7 +311,6 @@ async function advance(env, t) {
     const winners = ms.map((m) => m.winner_id).filter(Boolean);
     if (winners.length <= 1) return finishTournament(env, t.id, winners[0] || null);
     await createRound(env, t.id, round + 1, knockoutNext(winners));
-    await env.DB.prepare("UPDATE tournaments SET current_round=? WHERE id=?").bind(round + 1, t.id).run();
     return;
   }
   // roundrobin & swiss: stop at rounds_total, else build the next round
@@ -305,7 +329,6 @@ async function advance(env, t) {
     ).bind(t.id).all()).results.map((r) => pairKey(r.white_id, r.black_id)));
     await createRound(env, t.id, round + 1, swissPairing(standings, played));
   }
-  await env.DB.prepare("UPDATE tournaments SET current_round=? WHERE id=?").bind(round + 1, t.id).run();
 }
 
 async function finishByScore(env, tid) {
@@ -317,7 +340,8 @@ async function finishByScore(env, tid) {
 }
 
 async function finishTournament(env, tid, winnerId) {
-  await env.DB.prepare("UPDATE tournaments SET status='finished', winner_id=? WHERE id=?").bind(winnerId, tid).run();
+  await env.DB.prepare("UPDATE tournaments SET status='finished', winner_id=? WHERE id=? AND status!='finished'")
+    .bind(winnerId, tid).run();
 }
 
 async function bumpScore(env, tid, uid, n) {

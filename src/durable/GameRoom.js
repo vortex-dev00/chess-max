@@ -22,6 +22,42 @@ export class GameRoom {
     this.gameId = null;
     this.playerIds = { w: null, b: null };
     this.recorded = false;
+
+    // Restore the position + seats from durable storage so a redeploy or an
+    // eviction mid-game doesn't reset the board. Sockets are ephemeral: players
+    // reconnect and reseat themselves. blockConcurrencyWhile guarantees no
+    // message is handled before this finishes.
+    this.state.blockConcurrencyWhile(async () => {
+      const s = await this.state.storage.get("game");
+      if (!s) return;
+      this.chess = new Chess();
+      try { if (s.pgn) this.chess.loadPgn(s.pgn); } catch { this.chess = new Chess(); }
+      this.names = s.names || { w: null, b: null };
+      this.resigned = s.resigned ?? null;
+      this.lastMove = s.lastMove ?? null;
+      this.rated = s.rated ?? false;
+      this.gameId = s.gameId ?? null;
+      this.playerIds = s.playerIds || { w: null, b: null };
+      this.recorded = s.recorded ?? false;
+      this.code = s.code || "ROOM";
+    });
+  }
+
+  // Snapshot the durable parts of the game (not sockets) so it survives restarts.
+  async persist() {
+    try {
+      await this.state.storage.put("game", {
+        pgn: this.chess.pgn(),
+        names: this.names,
+        resigned: this.resigned,
+        lastMove: this.lastMove,
+        rated: this.rated,
+        gameId: this.gameId,
+        playerIds: this.playerIds,
+        recorded: this.recorded,
+        code: this.code,
+      });
+    } catch {}
   }
 
   async fetch(request) {
@@ -87,6 +123,7 @@ export class GameRoom {
     if (this.sockets.w) this.send(this.sockets.w, { type: "state", you: "w", code: this.code, ...s });
     if (this.sockets.b) this.send(this.sockets.b, { type: "state", you: "b", code: this.code, ...s });
     for (const ws of this.spectators) this.send(ws, { type: "state", you: "spectator", code: this.code, ...s });
+    this.persist();
     if (s.status !== "active" && this.rated && !this.recorded) this.recordResult(s);
   }
 
@@ -118,6 +155,8 @@ export class GameRoom {
              WHERE id = ? AND status != 'finished'`,
         ).bind(winnerStr, s.status, wDelta, bDelta, pgn, Date.now(), this.gameId),
       ]);
+
+      await this.persist();    // keep the "recorded" flag across restarts
 
       this.broadcast({
         type: "rated", winner: winnerStr,

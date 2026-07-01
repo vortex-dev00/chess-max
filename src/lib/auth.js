@@ -42,6 +42,28 @@ function readCookie(request) {
   return null;
 }
 
+// Per-IP throttle for the auth endpoints. Records this attempt, prunes ones
+// that have aged out of the window, and reports whether the caller is already
+// over the limit. Best-effort: if the DB call fails we let the request through
+// rather than lock everyone out.
+const RATE_WINDOW_MS = 15 * 60 * 1000;
+const RATE_MAX = 12;
+async function overRateLimit(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const now = Date.now();
+  const since = now - RATE_WINDOW_MS;
+  try {
+    await env.DB.prepare("DELETE FROM auth_attempts WHERE at < ?").bind(since).run();
+    const row = await env.DB.prepare(
+      "SELECT COUNT(*) AS c FROM auth_attempts WHERE ip = ? AND at >= ?",
+    ).bind(ip, since).first();
+    await env.DB.prepare("INSERT INTO auth_attempts (ip, at) VALUES (?, ?)").bind(ip, now).run();
+    return (row?.c || 0) >= RATE_MAX;
+  } catch {
+    return false;
+  }
+}
+
 export async function currentUser(request, env) {
   const token = readCookie(request);
   if (!token) return null;
@@ -72,31 +94,41 @@ async function createSession(env, userId) {
 }
 
 export async function signup(request, env) {
+  if (await overRateLimit(request, env)) return error("Too many attempts. Please wait a few minutes.", 429);
   const { email, name, password } = await request.json().catch(() => ({}));
   if (!email || !name || !password || password.length < 6) {
     return error("Email, name, and a 6+ character password are required.");
   }
-  const exists = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email.toLowerCase()).first();
+  const addr = email.toLowerCase();
+  const exists = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(addr).first();
   if (exists) return error("That email is already registered.", 409);
 
-  // First account created becomes the club admin (and is auto-approved).
-  // Everyone after that signs up "pending" until staff approve them.
-  const { count } = await env.DB.prepare("SELECT COUNT(*) AS count FROM users").first();
-  const role = count === 0 ? "admin" : "kid";
-  const status = count === 0 ? "approved" : "pending";
-
+  // First account created becomes the club admin (and is auto-approved); everyone
+  // after that signs up "pending" until staff approve them. The role/status are
+  // decided inside the INSERT so two simultaneous first signups can't both win
+  // admin — D1 serialises writes, so the second sees a non-empty table.
   const salt = randomHex(16);
   const hash = await hashPassword(password, salt);
-  const res = await env.DB.prepare(
-    "INSERT INTO users (email, name, password_hash, salt, role, status, created_at) VALUES (?,?,?,?,?,?,?)",
-  ).bind(email.toLowerCase(), name.slice(0, 60), hash, salt, role, status, Date.now()).run();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO users (email, name, password_hash, salt, role, status, created_at)
+       SELECT ?, ?, ?, ?,
+         CASE WHEN (SELECT COUNT(*) FROM users) = 0 THEN 'admin'    ELSE 'kid'     END,
+         CASE WHEN (SELECT COUNT(*) FROM users) = 0 THEN 'approved' ELSE 'pending' END,
+         ?`,
+    ).bind(addr, name.slice(0, 60), hash, salt, Date.now()).run();
+  } catch {
+    return error("That email is already registered.", 409);
+  }
 
-  const token = await createSession(env, res.meta.last_row_id);
-  return json({ user: { id: res.meta.last_row_id, email: email.toLowerCase(), name, role, status } },
+  const created = await env.DB.prepare("SELECT id, role, status FROM users WHERE email = ?").bind(addr).first();
+  const token = await createSession(env, created.id);
+  return json({ user: { id: created.id, email: addr, name: name.slice(0, 60), role: created.role, status: created.status } },
     { headers: { "Set-Cookie": cookie(token, SESSION_DAYS * 86400) } });
 }
 
 export async function login(request, env) {
+  if (await overRateLimit(request, env)) return error("Too many attempts. Please wait a few minutes.", 429);
   const { email, password } = await request.json().catch(() => ({}));
   if (!email || !password) return error("Email and password required.");
   const u = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email.toLowerCase()).first();

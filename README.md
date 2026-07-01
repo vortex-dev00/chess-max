@@ -30,9 +30,14 @@ The build output `public/` is what Cloudflare serves — it is generated, never 
 ```sh
 npm install
 npm run build           # produce public/
-npm run db:init         # apply schema/0001_init.sql to local D1
+npm run db:migrate      # apply every schema/ migration to local D1 (in order)
+npm run db:seed         # load the verified puzzle library (optional)
 npx wrangler dev        # http://127.0.0.1:8787
 ```
+
+`db:migrate` applies all numbered migrations in `schema/` and records them in a
+`_migrations` table, so re-running only applies what's new. Apply the whole set,
+not just `0001` — the app needs tasks, arena, tournaments, and events too.
 
 `npm run dev` runs the esbuild watcher alongside `wrangler dev`.
 
@@ -49,7 +54,8 @@ npx wrangler dev        # http://127.0.0.1:8787
 ```sh
 npx wrangler login
 npx wrangler d1 create chess-club-v2-db   # paste id into wrangler.toml
-npm run db:init:remote
+npm run db:migrate:remote                 # apply all migrations to remote D1
+npm run db:seed:remote                    # load the puzzle library (optional)
 npm run deploy
 ```
 
