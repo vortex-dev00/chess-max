@@ -29,8 +29,8 @@ export function mountEditor(container, { onSaved } = {}) {
   const boardEl = el("div.board");
   const palette = el("div.palette");
   const msg = el("div.subtle", { style: "margin-top:8px" });
-  const moveList = el("div.moves", { style: "margin-top:8px" }, "No moves yet.");
-  const pgnInput = el("textarea", { class: "pgn-drop", style: "min-height:64px", placeholder: 'Paste a PGN, or drag a .pgn file here.\n[FEN "..."] 1. Qh5+ Ke7 2. Qxe5#' });
+  const moveList = el("div.moves", { style: "margin-top:8px" }, "Zatím žádné tahy.");
+  const pgnInput = el("textarea", { class: "pgn-drop", style: "min-height:64px", placeholder: 'Vlož PGN, nebo sem přetáhni .pgn soubor.\n[FEN "..."] 1. Qh5+ Ke7 2. Qxe5#' });
   pgnInput.addEventListener("dragover", (e) => { e.preventDefault(); pgnInput.classList.add("drop-hover"); });
   pgnInput.addEventListener("dragleave", () => pgnInput.classList.remove("drop-hover"));
   pgnInput.addEventListener("drop", (e) => {
@@ -38,13 +38,13 @@ export function mountEditor(container, { onSaved } = {}) {
     const file = e.dataTransfer.files[0];
     if (file) file.text().then((txt) => { pgnInput.value = txt; importPgn(txt); });
   });
-  const titleIn = el("input", { placeholder: "Mate in two" });
-  const descIn = el("textarea", { style: "min-height:54px", placeholder: "White to play and win." });
+  const titleIn = el("input", { placeholder: "Mat ve dvou tazích" });
+  const descIn = el("textarea", { style: "min-height:54px", placeholder: "Bílý táhne a vyhrává." });
   const diffIn = el("input", { type: "number", min: "1", max: "5", value: "2" });
   const sideSeg = el("div.row", { style: "gap:4px" });
 
   // ── stepper header ──
-  const STEPS = ["Position", "Solution", "Save"];
+  const STEPS = ["Pozice", "Řešení", "Uložit"];
   const stepper = el("div.stepper");
   function buildStepper() {
     stepper.replaceChildren(...STEPS.map((label, i) => {
@@ -59,46 +59,46 @@ export function mountEditor(container, { onSaved } = {}) {
 
   // ── step 1 · position ──
   const step1 = el("div.editor-step",
-    el("p.subtle", {}, "Build a position with the palette, or import a PGN below."),
-    el("h4.editor-sub", {}, "Build by hand"),
+    el("p.subtle", {}, "Sestav pozici pomocí palety, nebo níže importuj PGN."),
+    el("h4.editor-sub", {}, "Sestavit ručně"),
     palette,
     el("div.row", { style: "margin-top:10px" },
-      el("button.btn.sm", { onclick: () => { board = boardFromFen(START); render(); } }, "Start position"),
-      el("button.btn.sm", { onclick: () => { board = {}; render(); } }, "Clear"),
+      el("button.btn.sm", { onclick: () => { board = boardFromFen(START); render(); } }, "Výchozí pozice"),
+      el("button.btn.sm", { onclick: () => { board = {}; render(); } }, "Vymazat"),
       sideSeg,
     ),
-    el("div.divider", {}, "or"),
-    el("h4.editor-sub", {}, "Import a PGN"),
+    el("div.divider", {}, "nebo"),
+    el("h4.editor-sub", {}, "Importovat PGN"),
     pgnInput,
-    el("button.btn.sm", { style: "margin-top:6px", onclick: () => importPgn(pgnInput.value) }, "Load PGN"),
+    el("button.btn.sm", { style: "margin-top:6px", onclick: () => importPgn(pgnInput.value) }, "Načíst PGN"),
     el("div.editor-nav", {},
       el("span", {}),
-      el("button.btn.primary", { onclick: toSolution }, "Record the solution →"),
+      el("button.btn.primary", { onclick: toSolution }, "Zaznamenat řešení →"),
     ),
   );
 
   // ── step 2 · solution ──
   const step2 = el("div.editor-step", { style: "display:none" },
-    el("p.subtle", {}, "Play the winning line on the board. The kid plays the 1st/3rd/5th moves; the rest are the opponent's replies."),
+    el("p.subtle", {}, "Zahraj vítěznou linii na šachovnici. Dítě hraje 1., 3., 5. tah; zbytek jsou odpovědi soupeře."),
     moveList,
     el("div.row", { style: "margin-top:10px" },
-      el("button.btn.sm", { onclick: undo }, "Undo"),
-      el("button.btn.sm", { onclick: clearMoves }, "Clear moves"),
+      el("button.btn.sm", { onclick: undo }, "Zpět"),
+      el("button.btn.sm", { onclick: clearMoves }, "Vymazat tahy"),
     ),
     el("div.editor-nav", {},
-      el("button.btn", { onclick: () => goStep(1) }, "← Edit position"),
-      el("button.btn.primary", { onclick: () => goStep(3) }, "Continue to save →"),
+      el("button.btn", { onclick: () => goStep(1) }, "← Upravit pozici"),
+      el("button.btn.primary", { onclick: () => goStep(3) }, "Pokračovat na uložení →"),
     ),
   );
 
   // ── step 3 · save ──
   const step3 = el("div.editor-step", { style: "display:none" },
-    el("label.field", {}, el("span", {}, "Title"), titleIn),
-    el("label.field", {}, el("span", {}, "Description"), descIn),
-    el("label.field", {}, el("span", {}, "Difficulty (1–5)"), diffIn),
+    el("label.field", {}, el("span", {}, "Název"), titleIn),
+    el("label.field", {}, el("span", {}, "Popis"), descIn),
+    el("label.field", {}, el("span", {}, "Obtížnost (1–5)"), diffIn),
     el("div.editor-nav", {},
-      el("button.btn", { onclick: () => goStep(2) }, "← Back to solution"),
-      el("button.btn.primary", { onclick: save }, "Save task"),
+      el("button.btn", { onclick: () => goStep(2) }, "← Zpět na řešení"),
+      el("button.btn.primary", { onclick: save }, "Uložit úkol"),
     ),
   );
 
@@ -134,11 +134,11 @@ export function mountEditor(container, { onSaved } = {}) {
   /* ── side-to-move segmented control ── */
   function buildSide() {
     sideSeg.replaceChildren(
-      el("span.subtle", {}, "Side:"),
+      el("span.subtle", {}, "Strana:"),
       ...["w", "b"].map((v) => el("button", {
         class: `btn sm${turn === v ? " primary" : ""}`,
         onclick: () => { turn = v; buildSide(); },
-      }, v === "w" ? "White" : "Black")),
+      }, v === "w" ? "Bílý" : "Černý")),
     );
   }
 
@@ -171,10 +171,10 @@ export function mountEditor(container, { onSaved } = {}) {
       solution = uci;
       board = boardFromFen(setupFen);
       turn = setupFen.split(" ")[1] || "w";
-      msg.innerHTML = `<span style="color:var(--good)">Imported ${uci.length} moves.</span>`;
+      msg.innerHTML = `<span style="color:var(--good)">Importováno ${uci.length} tahů.</span>`;
       goStep(2);
     } catch {
-      msg.innerHTML = `<span style="color:var(--bad)">Couldn't read that PGN.</span>`;
+      msg.innerHTML = `<span style="color:var(--bad)">Toto PGN se nepodařilo přečíst.</span>`;
     }
   }
 
@@ -252,8 +252,8 @@ export function mountEditor(container, { onSaved } = {}) {
     try { chess = new Chess(setupFen); }
     catch (e) {
       chess = null;
-      msg.innerHTML = `<span style="color:var(--bad)">Can't record a solution yet — ${friendly(e)}. `
-        + `Each side needs exactly one king, and the side NOT to move can't be left in check.</span>`;
+      msg.innerHTML = `<span style="color:var(--bad)">Řešení zatím nelze zaznamenat — ${friendly(e)}. `
+        + `Každá strana potřebuje přesně jednoho krále a strana, která netáhne, nesmí být v šachu.</span>`;
       return;
     }
     solution = [];
@@ -261,7 +261,7 @@ export function mountEditor(container, { onSaved } = {}) {
   }
   function friendly(e) {
     const m = String(e?.message || "").replace(/^Invalid FEN:\s*/i, "").trim();
-    return m || "the position is illegal";
+    return m || "pozice je neplatná";
   }
 
   function undo() {
@@ -271,18 +271,18 @@ export function mountEditor(container, { onSaved } = {}) {
     selected = null; renderMoves(); render();
   }
   function clearMoves() { solution = []; chess = new Chess(setupFen); selected = null; renderMoves(); render(); }
-  function renderMoves() { moveList.textContent = solution.length ? solution.join("  ") : "No moves yet."; }
+  function renderMoves() { moveList.textContent = solution.length ? solution.join("  ") : "Zatím žádné tahy."; }
 
   async function save() {
     const title = titleIn.value.trim();
     const fen = setupFen || fenFromBoard(board, turn);
-    if (!title) { msg.innerHTML = `<span style="color:var(--bad)">Title required.</span>`; return; }
-    try { new Chess(fen); } catch { msg.innerHTML = `<span style="color:var(--bad)">Fix the position before saving.</span>`; return; }
+    if (!title) { msg.innerHTML = `<span style="color:var(--bad)">Název je povinný.</span>`; return; }
+    try { new Chess(fen); } catch { msg.innerHTML = `<span style="color:var(--bad)">Před uložením oprav pozici.</span>`; return; }
     const { ok, data } = await api.post("/api/tasks", {
       title, description: descIn.value.trim(), difficulty: Number(diffIn.value) || 2, fen, solution: solution.join(" "),
     });
-    if (ok) { msg.innerHTML = `<span style="color:var(--good)">Saved!</span>`; reset(); onSaved?.(data.id); }
-    else msg.innerHTML = `<span style="color:var(--bad)">${data.error || "Error saving."}</span>`;
+    if (ok) { msg.innerHTML = `<span style="color:var(--good)">Uloženo!</span>`; reset(); onSaved?.(data.id); }
+    else msg.innerHTML = `<span style="color:var(--bad)">${data.error || "Chyba při ukládání."}</span>`;
   }
 
   function reset() {

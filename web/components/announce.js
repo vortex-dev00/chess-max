@@ -24,8 +24,8 @@ export async function mountAnnounce() {
   if (!open) return;
 
   const bar = el("div.announce", {},
-    el("span.announce-text", {}, `🏆 New tournament: `, el("strong", {}, open.name), ` — sign up to play!`),
-    el("a.btn.primary.sm", { href: `/tournament.html?id=${open.id}` }, "Join now"),
-    el("button.announce-x", { "aria-label": "Dismiss", onclick: () => { dismiss(open.id); bar.remove(); } }, "×"));
+    el("span.announce-text", {}, `🏆 Nový turnaj: `, el("strong", {}, open.name), ` — přihlas se!`),
+    el("a.btn.primary.sm", { href: `/tournament.html?id=${open.id}` }, "Přidat se"),
+    el("button.announce-x", { "aria-label": "Zavřít", onclick: () => { dismiss(open.id); bar.remove(); } }, "×"));
   document.body.insertBefore(bar, document.body.firstChild);
 }

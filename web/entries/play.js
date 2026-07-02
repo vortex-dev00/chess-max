@@ -28,7 +28,7 @@ else if (ratedGameId) initRated();
 
 async function initRated() {
   const res = await fetch(`/api/games/${ratedGameId}`);
-  if (!res.ok) { $("[data-lobby-err]").textContent = "Couldn't open that game — it may not be yours."; return; }
+  if (!res.ok) { $("[data-lobby-err]").textContent = "Tuto hru se nepodařilo otevřít — možná není tvoje."; return; }
   ratedInfo = await res.json();
   isRated = true;
   connect(ratedInfo.code, () => send({ type: "join", name: null }), ratedGameId);
@@ -37,7 +37,7 @@ async function initRated() {
 // Live read-only view of someone else's game.
 async function initSpectate(id) {
   const res = await fetch(`/api/games/${id}`);
-  if (!res.ok) { $("[data-lobby-err]").textContent = "Couldn't open that game."; return; }
+  if (!res.ok) { $("[data-lobby-err]").textContent = "Tuto hru se nepodařilo otevřít."; return; }
   ratedInfo = await res.json();
   isRated = true;
   spectating = true;
@@ -55,7 +55,7 @@ const nameVal = () => nameInput.value.trim() || null;
 $("[data-create]").onclick = () => connect(makeCode(), (code) => send({ type: "create", name: nameVal() }));
 $("[data-join]").onclick = () => {
   const code = $("[data-code]").value.toUpperCase().trim();
-  if (code.length !== 4) return ($("[data-lobby-err]").textContent = "Enter the 4-letter code.");
+  if (code.length !== 4) return ($("[data-lobby-err]").textContent = "Zadej čtyřznakový kód.");
   connect(code, () => send({ type: "join", name: nameVal() }));
 };
 
@@ -66,8 +66,8 @@ function connect(code, onOpen, game, spectate) {
   ws = new WebSocket(`${proto}://${location.host}/ws${q}`);
   ws.onopen = () => onOpen(code);
   ws.onmessage = (e) => handle(JSON.parse(e.data));
-  ws.onclose = () => setStatus("Disconnected — refresh to reconnect.");
-  ws.onerror = () => ($("[data-lobby-err]").textContent = "Could not reach the server.");
+  ws.onclose = () => setStatus("Odpojeno — obnov stránku pro nové připojení.");
+  ws.onerror = () => ($("[data-lobby-err]").textContent = "Server se nepodařilo kontaktovat.");
 }
 const send = (obj) => ws?.readyState === WebSocket.OPEN && ws.send(JSON.stringify(obj));
 
@@ -156,10 +156,10 @@ function applyState(s) {
 
   // players (bottom = me / white by default)
   const top = orient === "w" ? "b" : "w", bottom = orient === "w" ? "w" : "b";
-  $("[data-top-name]").textContent = s.players[top] || (top === "w" ? "White" : "Black");
-  $("[data-bottom-name]").textContent = s.players[bottom] || (bottom === "w" ? "White" : "Black");
-  $("[data-top-color]").textContent = top === "w" ? "White" : "Black";
-  $("[data-bottom-color]").textContent = bottom === "w" ? "White" : "Black";
+  $("[data-top-name]").textContent = s.players[top] || (top === "w" ? "Bílý" : "Černý");
+  $("[data-bottom-name]").textContent = s.players[bottom] || (bottom === "w" ? "Bílý" : "Černý");
+  $("[data-top-color]").textContent = top === "w" ? "Bílý" : "Černý";
+  $("[data-bottom-color]").textContent = bottom === "w" ? "Bílý" : "Černý";
   if (isRated && ratedInfo) {
     const baseElo = (c) => (c === "w" ? ratedInfo.white.elo : ratedInfo.black.elo);
     const liveElo = (c) => (ratedResult ? (c === "w" ? ratedResult.white.elo : ratedResult.black.elo) : baseElo(c));
@@ -171,8 +171,8 @@ function applyState(s) {
 
   setStatus(statusText(s));
   $("[data-turn-label]").textContent = spectating
-    ? (status === "active" ? `👁 Spectating · ${s.turn === "w" ? "White" : "Black"} to move` : "👁 Spectating")
-    : status === "active" ? (s.turn === myColor ? "Your move" : "Opponent's move") : "";
+    ? (status === "active" ? `👁 Sleduješ · na tahu je ${s.turn === "w" ? "bílý" : "černý"}` : "👁 Sleduješ")
+    : status === "active" ? (s.turn === myColor ? "Jsi na tahu" : "Tah soupeře") : "";
   renderMoves(s.history);
 
   $("[data-resign]").classList.toggle("hidden", myColor === "spectator" || status !== "active");
@@ -182,11 +182,11 @@ function applyState(s) {
 }
 
 function statusText(s) {
-  if (s.status === "active") return s.inCheck ? "Check!" : "Game in progress";
-  if (s.status === "checkmate") return "Checkmate";
-  if (s.status === "resigned") return "Resignation";
-  if (s.status === "stalemate") return "Stalemate — draw";
-  return "Draw";
+  if (s.status === "active") return s.inCheck ? "Šach!" : "Hra probíhá";
+  if (s.status === "checkmate") return "Mat";
+  if (s.status === "resigned") return "Vzdání se";
+  if (s.status === "stalemate") return "Pat — remíza";
+  return "Remíza";
 }
 const setStatus = (t) => ($("[data-status]").textContent = t);
 
@@ -203,8 +203,8 @@ function showOverlay(s) {
   const won = s.winner && s.winner === myColor;
   $("[data-over-title]").textContent = statusText(s);
   $("[data-over-sub]").textContent = myColor === "spectator"
-    ? (s.winner ? `${s.players[s.winner] || (s.winner === "w" ? "White" : "Black")} wins.` : "It's a draw.")
-    : s.winner ? (won ? "You win!" : "You lost.") : "It's a draw.";
+    ? (s.winner ? `Vyhrál ${s.players[s.winner] || (s.winner === "w" ? "bílý" : "černý")}.` : "Je to remíza.")
+    : s.winner ? (won ? "Vyhrál jsi!" : "Prohrál jsi.") : "Je to remíza.";
   $("[data-over-rematch]").classList.toggle("hidden", isRated || myColor === "spectator");
   $("[data-overlay]").classList.remove("hidden");
   showRatedElo();
@@ -223,7 +223,7 @@ function showRatedElo() {
 }
 
 // ── controls ──
-$("[data-resign]").onclick = () => confirm("Resign this game?") && send({ type: "resign" });
+$("[data-resign]").onclick = () => confirm("Chceš se vzdát této hry?") && send({ type: "resign" });
 $("[data-rematch]").onclick = () => send({ type: "rematch" });
 $("[data-over-rematch]").onclick = () => { $("[data-overlay]").classList.add("hidden"); send({ type: "rematch" }); };
 
@@ -250,7 +250,7 @@ async function initReplay(id) {
   const res = await fetch(`/api/games/${id}/replay`);
   if (!res.ok) {
     const d = await res.json().catch(() => ({}));
-    $("[data-lobby-err]").textContent = d.error || "Couldn't open that replay.";
+    $("[data-lobby-err]").textContent = d.error || "Tento záznam se nepodařilo otevřít.";
     return;
   }
   const g = await res.json();
@@ -267,19 +267,19 @@ async function initReplay(id) {
   // Enter the board view (no socket, no room code).
   $("[data-lobby]").classList.add("hidden");
   $("[data-game]").classList.remove("hidden");
-  $("[data-room]").textContent = "Replay";
+  $("[data-room]").textContent = "Záznam";
   buildBoard();
 
   // Names + result, hide the live controls, reveal the scrubber.
-  $("[data-bottom-name]").textContent = g.white.name || "White";
-  $("[data-top-name]").textContent = g.black.name || "Black";
-  $("[data-bottom-color]").textContent = "White";
-  $("[data-top-color]").textContent = "Black";
-  const result = g.winner === "draw" ? "Draw"
-    : g.winner === "white" ? `${g.white.name || "White"} won`
-    : `${g.black.name || "Black"} won`;
-  setStatus(`Replay · ${result}${g.reason ? ` (${g.reason})` : ""}`);
-  $("[data-turn-label]").textContent = "⏪ Replay";
+  $("[data-bottom-name]").textContent = g.white.name || "Bílý";
+  $("[data-top-name]").textContent = g.black.name || "Černý";
+  $("[data-bottom-color]").textContent = "Bílý";
+  $("[data-top-color]").textContent = "Černý";
+  const result = g.winner === "draw" ? "Remíza"
+    : g.winner === "white" ? `Vyhrál ${g.white.name || "Bílý"}`
+    : `Vyhrál ${g.black.name || "Černý"}`;
+  setStatus(`Záznam · ${result}${g.reason ? ` (${g.reason})` : ""}`);
+  $("[data-turn-label]").textContent = "⏪ Přehrávání záznamu";
   $("[data-resign]").classList.add("hidden");
   $("[data-rematch]").classList.add("hidden");
   const chatWrap = $("[data-chat-input]")?.closest(".chat");

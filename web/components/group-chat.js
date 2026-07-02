@@ -8,24 +8,25 @@
 import { el } from "./dom.js";
 
 const STAFF = new Set(["admin", "coach"]);
+const ROLE_LABEL = { kid: "dítě", coach: "trenér", admin: "administrátor" };
 
 export function mountGroupChat(container, groupId, me) {
-  const log = el("div.chat-log", {}, el("div.sys", {}, "Connecting…"));
-  const input = el("input", { class: "grow", placeholder: "Message your group…", maxlength: "500" });
-  const sendBtn = el("button.btn.primary.sm", { type: "button" }, "Send");
+  const log = el("div.chat-log", {}, el("div.sys", {}, "Připojování…"));
+  const input = el("input", { class: "grow", placeholder: "Napiš zprávu své skupině…", maxlength: "500" });
+  const sendBtn = el("button.btn.primary.sm", { type: "button" }, "Odeslat");
   let closed = false;
 
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const ws = new WebSocket(`${proto}://${location.host}/chat?group=${groupId}`);
 
-  ws.addEventListener("open", () => { if (!closed) log.replaceChildren(el("div.sys", {}, "No messages yet. Say hi!")); });
-  ws.addEventListener("close", () => { if (!closed) appendSys("Disconnected."); });
-  ws.addEventListener("error", () => { if (!closed) appendSys("Connection problem."); });
+  ws.addEventListener("open", () => { if (!closed) log.replaceChildren(el("div.sys", {}, "Zatím žádné zprávy. Pozdrav ostatní!")); });
+  ws.addEventListener("close", () => { if (!closed) appendSys("Odpojeno."); });
+  ws.addEventListener("error", () => { if (!closed) appendSys("Problém s připojením."); });
   ws.addEventListener("message", (e) => {
     let msg; try { msg = JSON.parse(e.data); } catch { return; }
     if (msg.type === "history") {
       log.replaceChildren(...(msg.messages.length
-        ? msg.messages.map(line) : [el("div.sys", {}, "No messages yet. Say hi!")]));
+        ? msg.messages.map(line) : [el("div.sys", {}, "Zatím žádné zprávy. Pozdrav ostatní!")]));
       scroll();
     } else if (msg.type === "chat") {
       // drop the "no messages yet" placeholder before the first real message
@@ -39,11 +40,11 @@ export function mountGroupChat(container, groupId, me) {
   function line(m) {
     const mine = m.user_id === me?.id;
     const staff = STAFF.has(m.role);
-    const time = m.at ? new Date(m.at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "";
+    const time = m.at ? new Date(m.at).toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }) : "";
     const node = el("div", { class: `chat-msg${staff ? " staff" : ""}${mine ? " mine" : ""}` },
       el("span.chat-who", {},
-        el("b", {}, mine ? "You" : m.name),
-        staff ? el("span.chat-badge", {}, m.role) : "",
+        el("b", {}, mine ? "Ty" : m.name),
+        staff ? el("span.chat-badge", {}, ROLE_LABEL[m.role] || m.role) : "",
         time ? el("span.chat-time", {}, time) : ""),
       el("span.chat-text", {}, m.text));
     return node;

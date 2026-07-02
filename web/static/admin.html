@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="cs">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin · Chess Club</title>
+    <title>Administrace · Šachy na Smetance</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -13,114 +13,120 @@
   <body>
     <header data-nav></header>
 
-    <main class="wrap" data-app hidden>
+    <main class="wrap wide" data-app hidden>
       <div class="spread">
-        <h1 style="font-size:30px; margin:0">Admin</h1>
+        <h1 style="font-size:30px; margin:0">Administrace</h1>
         <span class="subtle" data-who></span>
       </div>
 
-      <div class="tabs">
-        <button class="tab is-active" data-tab="groups">Groups</button>
-        <button class="tab" data-tab="approvals">Approvals <span class="tab-count" data-pending-count hidden></span></button>
-        <button class="tab" data-tab="users">Users &amp; Roles</button>
-        <button class="tab" data-tab="tasks">Tasks</button>
-        <button class="tab" data-tab="progress">Progress</button>
-      </div>
-
-      <!-- ── Groups ── -->
-      <section data-panel="groups">
-        <div class="grid" style="grid-template-columns: 320px 1fr; align-items:start">
-          <div class="stack">
-            <div class="card">
-              <h2 style="font-size:18px">New group</h2>
-              <div class="row"><input data-new-group placeholder="e.g. Beginners" class="grow" /><button class="btn primary sm" data-create-group>Create</button></div>
-            </div>
-            <div class="card"><h2 style="font-size:18px">All groups</h2><ul class="list" data-groups></ul></div>
+      <div class="admin-shell" style="margin-top:18px">
+        <nav class="admin-side">
+          <div class="tabs">
+            <button class="tab is-active" data-tab="groups">Skupiny</button>
+            <button class="tab" data-tab="approvals">Žádosti <span class="tab-count" data-pending-count hidden></span></button>
+            <button class="tab" data-tab="users">Uživatelé a role</button>
+            <button class="tab" data-tab="tasks">Úkoly</button>
+            <button class="tab" data-tab="progress">Pokrok</button>
           </div>
-          <div class="card" data-group-detail hidden>
-            <div class="spread"><h2 data-group-name style="margin:0">Group</h2><button class="btn danger sm" data-delete-group>Delete</button></div>
+        </nav>
 
-            <div class="tabs" style="margin-top:14px">
-              <button class="tab is-active" data-sub="members">Members</button>
-              <button class="tab" data-sub="lessons">Lessons</button>
-              <button class="tab" data-sub="reviews">Reviews</button>
-              <button class="tab" data-sub="chat">Chat</button>
-            </div>
-
-            <div data-sub-panel="members">
-              <ul class="list" data-members></ul>
-              <div class="row" style="margin-top:12px"><select data-kid-picker class="grow"></select><button class="btn primary sm" data-add-member>Add member</button></div>
-            </div>
-
-            <div data-sub-panel="lessons" hidden>
-              <div class="grid two" style="margin-bottom:10px">
-                <label class="field" style="margin:0"><span>Date &amp; time</span><input data-lesson-time type="datetime-local" /></label>
-                <label class="field" style="margin:0"><span>Location</span><input data-lesson-loc placeholder="Club room A" /></label>
+        <div>
+          <!-- ── Groups ── -->
+          <section data-panel="groups">
+            <div class="grid" style="grid-template-columns: 300px 1fr; align-items:start">
+              <div class="stack">
+                <div class="card">
+                  <h2 style="font-size:18px">Nová skupina</h2>
+                  <div class="row"><input data-new-group placeholder="např. Začátečníci" class="grow" /><button class="btn primary sm" data-create-group>Vytvořit</button></div>
+                </div>
+                <div class="card"><h2 style="font-size:18px">Všechny skupiny</h2><ul class="list" data-groups></ul></div>
               </div>
-              <label class="field"><span>Note / topic</span><input data-lesson-note placeholder="Pins & forks; homework p.12" /></label>
-              <button class="btn primary sm" data-add-lesson>Add lesson</button>
-              <ul class="list" data-lessons style="margin-top:14px"></ul>
+              <div class="card" data-group-detail hidden>
+                <div class="spread"><h2 data-group-name style="margin:0">Skupina</h2><button class="btn danger sm" data-delete-group>Smazat</button></div>
+
+                <div class="tabs" style="margin-top:14px">
+                  <button class="tab is-active" data-sub="members">Členové</button>
+                  <button class="tab" data-sub="lessons">Lekce</button>
+                  <button class="tab" data-sub="reviews">Hodnocení</button>
+                  <button class="tab" data-sub="chat">Chat</button>
+                </div>
+
+                <div data-sub-panel="members">
+                  <ul class="list" data-members></ul>
+                  <div class="row" style="margin-top:12px"><select data-kid-picker class="grow"></select><button class="btn primary sm" data-add-member>Přidat člena</button></div>
+                </div>
+
+                <div data-sub-panel="lessons" hidden>
+                  <div class="grid two" style="margin-bottom:10px">
+                    <label class="field" style="margin:0"><span>Datum a čas</span><input data-lesson-time type="datetime-local" /></label>
+                    <label class="field" style="margin:0"><span>Místo</span><input data-lesson-loc placeholder="Klubovna A" /></label>
+                  </div>
+                  <label class="field"><span>Poznámka / téma</span><input data-lesson-note placeholder="Vidličky a vazby; domácí úkol str. 12" /></label>
+                  <button class="btn primary sm" data-add-lesson>Přidat lekci</button>
+                  <ul class="list" data-lessons style="margin-top:14px"></ul>
+                </div>
+
+                <div data-sub-panel="reviews" hidden>
+                  <label class="field"><span>Datum</span><input data-review-date type="date" /></label>
+                  <label class="field"><span>Shrnutí dne</span><textarea data-review-text style="min-height:70px" placeholder="Na čem skupina pracovala, jak to šlo…"></textarea></label>
+                  <button class="btn primary sm" data-add-review>Přidat hodnocení</button>
+                  <ul class="list" data-reviews style="margin-top:14px"></ul>
+                </div>
+
+                <div data-sub-panel="chat" hidden>
+                  <p class="subtle" style="margin-bottom:10px">Živý chat skupiny — tvé zprávy jsou zvýrazněné jako zprávy trenéra.</p>
+                  <div data-chat></div>
+                </div>
+              </div>
+              <div class="card" data-group-empty><p class="muted" style="margin:0">Vyber skupinu pro správu členů.</p></div>
             </div>
+          </section>
 
-            <div data-sub-panel="reviews" hidden>
-              <label class="field"><span>Date</span><input data-review-date type="date" /></label>
-              <label class="field"><span>Review of the day</span><textarea data-review-text style="min-height:70px" placeholder="What the group worked on, how it went…"></textarea></label>
-              <button class="btn primary sm" data-add-review>Add review</button>
-              <ul class="list" data-reviews style="margin-top:14px"></ul>
+          <!-- ── Approvals ── -->
+          <section data-panel="approvals" hidden>
+            <div class="card">
+              <h2 style="font-size:18px">Čekající na schválení</h2>
+              <p class="subtle" style="margin-bottom:12px">Lidé, kteří se zaregistrovali a čekají na přístup. Schvál je, nebo zamítni a účet smaž.</p>
+              <ul class="list" data-pending></ul>
             </div>
+          </section>
 
-            <div data-sub-panel="chat" hidden>
-              <p class="subtle" style="margin-bottom:10px">Live group chat — your messages are highlighted as staff.</p>
-              <div data-chat></div>
+          <!-- ── Users & Roles ── -->
+          <section data-panel="users" hidden>
+            <div class="card">
+              <h2 style="font-size:18px">Členové</h2>
+              <p class="subtle" style="margin-bottom:12px">Nastav úroveň oprávnění každého člena a podívej se, do kterých skupin patří.</p>
+              <ul class="list" data-users></ul>
             </div>
-          </div>
-          <div class="card" data-group-empty><p class="muted" style="margin:0">Select a group to manage members.</p></div>
-        </div>
-      </section>
+          </section>
 
-      <!-- ── Approvals ── -->
-      <section data-panel="approvals" hidden>
-        <div class="card">
-          <h2 style="font-size:18px">Pending approvals</h2>
-          <p class="subtle" style="margin-bottom:12px">People who signed up and are waiting for access. Approve to let them in, or reject to remove the account.</p>
-          <ul class="list" data-pending></ul>
-        </div>
-      </section>
+          <!-- ── Tasks ── -->
+          <section data-panel="tasks" hidden>
+            <div class="card" style="margin-bottom:16px">
+              <h2 style="font-size:18px">Vytvořit úkol</h2>
+              <p class="subtle" style="margin-bottom:12px">Sestav pozici na šachovnici nebo importuj PGN, zaznamenej řešení a ulož.</p>
+              <div data-editor></div>
+            </div>
+            <div class="card">
+              <div class="spread" style="margin-bottom:6px">
+                <h2 style="font-size:18px; margin:0">Databáze úloh</h2>
+                <span class="subtle" data-task-count></span>
+              </div>
+              <p class="subtle" style="margin-bottom:12px">Každá uložená pozice. Hledej podle názvu, prohlédni si šachovnici a přiřaď dítěti.</p>
+              <input data-task-search class="search" placeholder="🔎 Hledat úlohy podle názvu nebo popisu…" style="margin-bottom:14px" />
+              <div class="task-gallery" data-tasks></div>
+            </div>
+          </section>
 
-      <!-- ── Users & Roles ── -->
-      <section data-panel="users" hidden>
-        <div class="card">
-          <h2 style="font-size:18px">Members</h2>
-          <p class="subtle" style="margin-bottom:12px">Set each person's permission level, and see the groups they belong to.</p>
-          <ul class="list" data-users></ul>
+          <!-- ── Progress (group → kid drill-down) ── -->
+          <section data-panel="progress" hidden>
+            <div class="card">
+              <nav class="crumbs" data-progress-crumbs></nav>
+              <div data-progress></div>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <!-- ── Tasks ── -->
-      <section data-panel="tasks" hidden>
-        <div class="card" style="margin-bottom:16px">
-          <h2 style="font-size:18px">Create a task</h2>
-          <p class="subtle" style="margin-bottom:12px">Set up a position on the board or import a PGN, record the solution, and save.</p>
-          <div data-editor></div>
-        </div>
-        <div class="card">
-          <div class="spread" style="margin-bottom:6px">
-            <h2 style="font-size:18px; margin:0">Task database</h2>
-            <span class="subtle" data-task-count></span>
-          </div>
-          <p class="subtle" style="margin-bottom:12px">Every saved position. Search by title, preview the board, and assign to a kid.</p>
-          <input data-task-search class="search" placeholder="🔎 Search tasks by title or description…" style="margin-bottom:14px" />
-          <div class="task-gallery" data-tasks></div>
-        </div>
-      </section>
-
-      <!-- ── Progress (group → kid drill-down) ── -->
-      <section data-panel="progress" hidden>
-        <div class="card">
-          <nav class="crumbs" data-progress-crumbs></nav>
-          <div data-progress></div>
-        </div>
-      </section>
+      </div>
     </main>
 
     <script type="module" src="/assets/admin.js"></script>

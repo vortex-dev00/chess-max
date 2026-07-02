@@ -7,6 +7,8 @@ await mountNav("arena");
 const me = await requireRole();   // any signed-in user
 if (me) main();
 
+const ROLE_LABEL = { kid: "dítě", coach: "trenér", admin: "administrátor" };
+
 async function main() {
   $("[data-app]").hidden = false;
   // host-tournament form
@@ -36,7 +38,7 @@ async function load() {
   renderTournaments(tourneys);
 }
 
-const FORMAT_LABEL = { knockout: "Bracket", roundrobin: "Round-robin", swiss: "Swiss" };
+const FORMAT_LABEL = { knockout: "Pavouk", roundrobin: "Kruhový systém", swiss: "Švýcarský systém" };
 function renderTournaments(data) {
   $("[data-host]").hidden = !data.canManage || !$("[data-host-form]").hidden;
   const list = data.tournaments || [];
@@ -46,14 +48,14 @@ function renderTournaments(data) {
         el("strong", {}, t.name),
         el("span.tag", { style: "margin-left:8px" }, FORMAT_LABEL[t.format] || t.format),
         el("span.subtle", { style: "margin-left:8px" },
-          t.status === "finished" ? `won by ${t.winner_name || "—"}`
-          : t.status === "active" ? `round ${t.current_round}/${t.rounds_total} · ${t.players} players`
-          : `${t.players} joined`)),
+          t.status === "finished" ? `vyhrál ${t.winner_name || "—"}`
+          : t.status === "active" ? `kolo ${t.current_round}/${t.rounds_total} · ${t.players} hráčů`
+          : `přihlášeno ${t.players}`)),
       el("div.row", { style: "gap:8px" },
-        t.status !== "finished" && t.joined ? el("span.tag.good", {}, "joined") : "",
+        t.status !== "finished" && t.joined ? el("span.tag.good", {}, "přihlášen") : "",
         el("a.btn.sm", { class: t.status === "open" && !t.joined ? "btn primary sm" : "btn sm", href: `/tournament.html?id=${t.id}` },
-          t.status === "open" ? (t.joined ? "View" : "Join") : "View"))),
-  ) : [el("li.muted", {}, "No tournaments yet.")]));
+          t.status === "open" ? (t.joined ? "Zobrazit" : "Přidat se") : "Zobrazit"))),
+  ) : [el("li.muted", {}, "Zatím žádné turnaje.")]));
 }
 
 // Load the group + kid pickers the first time the host form opens.
@@ -64,28 +66,28 @@ async function openHostForm() {
   const [groups, kids] = await Promise.all([api.get("/api/groups"), api.get("/api/kids")]);
   $("[data-t-group]").replaceChildren(...((groups.groups || []).length
     ? groups.groups.map((g) => el("option", { value: g.id }, g.name))
-    : [el("option", { value: "" }, "No groups yet")]));
+    : [el("option", { value: "" }, "Zatím žádné skupiny")]));
   $("[data-t-kids]").replaceChildren(...((kids.kids || []).length
     ? kids.kids.map((k) => el("option", { value: k.id }, k.name))
-    : [el("option", { value: "" }, "No kids yet")]));
+    : [el("option", { value: "" }, "Zatím žádné děti")]));
 }
 
 async function createTournament() {
   const name = $("[data-t-name]").value.trim();
   const format = $("[data-t-format]").value;
-  if (!name) { alert("Give it a name."); return; }
+  if (!name) { alert("Zadej název."); return; }
   const body = { name, format, audience_type: $("[data-t-audience]").value };
   if (format === "swiss" && $("[data-t-rounds]").value) body.rounds = Number($("[data-t-rounds]").value);
   if (body.audience_type === "group") {
     body.group_id = Number($("[data-t-group]").value);
-    if (!body.group_id) { alert("Pick a group (or create one first)."); return; }
+    if (!body.group_id) { alert("Vyber skupinu (nebo ji nejdřív založ)."); return; }
   }
   if (body.audience_type === "kids") {
     body.kid_ids = [...$("[data-t-kids]").selectedOptions].map((o) => Number(o.value)).filter(Boolean);
-    if (!body.kid_ids.length) { alert("Pick at least one kid."); return; }
+    if (!body.kid_ids.length) { alert("Vyber alespoň jedno dítě."); return; }
   }
   const { ok, data } = await api.post("/api/tournaments", body);
-  if (!ok) { alert(data.error || "Couldn't create."); return; }
+  if (!ok) { alert(data.error || "Nepodařilo se vytvořit."); return; }
   location.href = `/tournament.html?id=${data.id}`;
 }
 
@@ -93,7 +95,7 @@ function renderRating(players) {
   const meRow = players.find((p) => p.id === me.id);
   const rank = players.findIndex((p) => p.id === me.id) + 1;
   $("[data-my-elo]").textContent = meRow ? meRow.elo : "1200";
-  $("[data-my-rank]").textContent = rank ? `#${rank} of ${players.length}` : "";
+  $("[data-my-rank]").textContent = rank ? `#${rank} z ${players.length}` : "";
 }
 
 function renderLeaderboard(players) {
@@ -101,14 +103,14 @@ function renderLeaderboard(players) {
     el("li", { class: p.id === me.id ? "lead-top" : "" },
       el("span", {},
         el("span.lead-rank", {}, `#${i + 1}`),
-        el("strong", { style: "margin-left:8px" }, p.id === me.id ? `${p.name} (you)` : p.name),
-        el("span.subtle", { style: "margin-left:8px" }, p.role)),
+        el("strong", { style: "margin-left:8px" }, p.id === me.id ? `${p.name} (ty)` : p.name),
+        el("span.subtle", { style: "margin-left:8px" }, ROLE_LABEL[p.role] || p.role)),
       el("div.row", { style: "gap:10px" },
         el("span.elo-pill", {}, `${p.elo}`),
         p.id === me.id ? "" : el("button.btn.sm", {
           onclick: () => challenge(p.id),
-        }, "Challenge"))),
-  ) : [el("li.muted", {}, "No players yet.")]));
+        }, "Vyzvat"))),
+  ) : [el("li.muted", {}, "Zatím žádní hráči.")]));
 }
 
 function renderChallenges(c) {
@@ -120,54 +122,54 @@ function renderChallenges(c) {
   const blocks = [];
 
   if (active.length) blocks.push(el("div", {},
-    el("div.subtle", { style: "margin:4px 0 6px" }, "Games in progress"),
+    el("div.subtle", { style: "margin:4px 0 6px" }, "Rozehrané partie"),
     ...active.map((a) => {
       const opp = a.from_id === me.id ? a.to_name : a.from_name;
       return el("div.spread", { style: "padding:8px 0; border-bottom:1px solid var(--line-soft)" },
-        el("span", {}, el("strong", {}, opp), el("span.subtle", { style: "margin-left:8px" }, "rated game")),
-        el("a.btn.primary.sm", { href: `/play.html?game=${a.game_id}` }, "Resume"));
+        el("span", {}, el("strong", {}, opp), el("span.subtle", { style: "margin-left:8px" }, "hodnocená partie")),
+        el("a.btn.primary.sm", { href: `/play.html?game=${a.game_id}` }, "Pokračovat"));
     })));
 
   if (incoming.length) blocks.push(el("div", {},
-    el("div.subtle", { style: "margin:10px 0 6px" }, "Challenges to you"),
+    el("div.subtle", { style: "margin:10px 0 6px" }, "Výzvy tobě"),
     ...incoming.map((ch) => el("div.spread", { style: "padding:8px 0; border-bottom:1px solid var(--line-soft)" },
       el("span", {}, el("strong", {}, ch.from_name), el("span.elo-pill", { style: "margin-left:8px" }, `${ch.from_elo}`)),
       el("div.row", { style: "gap:8px" },
-        el("button.btn.primary.sm", { onclick: () => accept(ch.id) }, "Accept"),
-        el("button.btn.danger.sm", { onclick: () => decline(ch.id) }, "Decline"))))));
+        el("button.btn.primary.sm", { onclick: () => accept(ch.id) }, "Přijmout"),
+        el("button.btn.danger.sm", { onclick: () => decline(ch.id) }, "Odmítnout"))))));
 
   if (outgoing.length) blocks.push(el("div", {},
-    el("div.subtle", { style: "margin:10px 0 6px" }, "Your challenges"),
+    el("div.subtle", { style: "margin:10px 0 6px" }, "Tvé výzvy"),
     ...outgoing.map((ch) => el("div.spread", { style: "padding:8px 0; border-bottom:1px solid var(--line-soft)" },
-      el("span", {}, el("strong", {}, ch.to_name), el("span.subtle", { style: "margin-left:8px" }, "waiting…")),
-      el("button.btn.sm", { onclick: () => decline(ch.id) }, "Cancel")))));
+      el("span", {}, el("strong", {}, ch.to_name), el("span.subtle", { style: "margin-left:8px" }, "čeká se…")),
+      el("button.btn.sm", { onclick: () => decline(ch.id) }, "Zrušit")))));
 
   $("[data-challenges]").replaceChildren(...blocks);
 }
 
 function renderHistory(games) {
   $("[data-history]").replaceChildren(...(games.length ? games.map((g) => {
-    const tag = g.result === "win" ? el("span.tag.good", {}, "Win")
-      : g.result === "loss" ? el("span.tag", { style: "color:var(--bad); border-color:var(--bad-line)" }, "Loss")
-      : el("span.tag", {}, "Draw");
+    const tag = g.result === "win" ? el("span.tag.good", {}, "Výhra")
+      : g.result === "loss" ? el("span.tag", { style: "color:var(--bad); border-color:var(--bad-line)" }, "Prohra")
+      : el("span.tag", {}, "Remíza");
     const delta = g.delta == null ? "" : el("span.elo-delta", { class: `elo-delta ${g.delta >= 0 ? "up" : "down"}` },
       `${g.delta >= 0 ? "+" : ""}${g.delta}`);
     return el("li", {},
       el("span", {}, el("strong", {}, `vs ${g.opponent}`), el("span.subtle", { style: "margin-left:8px" }, g.at ? fmtDate(g.at) : "")),
       el("div.row", { style: "gap:10px; align-items:center" }, tag, delta,
-        el("a.btn.sm.ghost", { href: `/play.html?replay=${g.id}` }, "↺ Replay")));
-  }) : [el("li.muted", {}, "No rated games yet — challenge someone above!")]));
+        el("a.btn.sm.ghost", { href: `/play.html?replay=${g.id}` }, "↺ Přehrát")));
+  }) : [el("li.muted", {}, "Zatím žádné hodnocené partie — vyzvi někoho výše!")]));
 }
 
 /* ── actions ── */
 async function challenge(opponentId) {
   const { ok, data } = await api.post("/api/challenges", { opponent_id: opponentId });
-  if (!ok) alert(data.error || "Couldn't send challenge.");
+  if (!ok) alert(data.error || "Výzvu se nepodařilo odeslat.");
   load();
 }
 async function accept(id) {
   const { ok, data } = await api.post(`/api/challenges/${id}/accept`);
-  if (!ok) { alert(data.error || "Couldn't accept."); return load(); }
+  if (!ok) { alert(data.error || "Nepodařilo se přijmout."); return load(); }
   location.href = `/play.html?game=${data.game_id}`;
 }
 async function decline(id) {

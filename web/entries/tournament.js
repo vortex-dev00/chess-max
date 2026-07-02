@@ -8,16 +8,16 @@ const me = await requireRole();
 const tid = new URLSearchParams(location.search).get("id");
 if (me && tid) main();
 
-const FORMAT_LABEL = { knockout: "Single-elimination", roundrobin: "Round-robin", swiss: "Swiss" };
+const FORMAT_LABEL = { knockout: "Vyřazovací", roundrobin: "Kruhový systém", swiss: "Švýcarský systém" };
 
 // Watch a live match / replay a finished one. Returns null for byes or
 // not-yet-started pairings (no game to open).
 function matchLink(m) {
   if (!m.game_id) return null;
   if (m.status === "finished" && m.result !== "bye")
-    return el("a.btn.sm.ghost", { href: `/play.html?replay=${m.game_id}` }, "↺ Replay");
+    return el("a.btn.sm.ghost", { href: `/play.html?replay=${m.game_id}` }, "↺ Přehrát");
   if (m.status !== "finished" && m.game_status === "active")
-    return el("a.btn.sm", { href: `/play.html?watch=${m.game_id}` }, "👁 Watch");
+    return el("a.btn.sm", { href: `/play.html?watch=${m.game_id}` }, "👁 Sledovat");
   return null;
 }
 
@@ -29,7 +29,7 @@ async function main() {
 
 async function load() {
   const d = await api.get(`/api/tournaments/${tid}`);
-  if (d.error) { $("[data-t-name]").textContent = "Tournament not found"; return; }
+  if (d.error) { $("[data-t-name]").textContent = "Turnaj nenalezen"; return; }
   render(d);
 }
 
@@ -37,9 +37,9 @@ function render(d) {
   const t = d.tournament;
   $("[data-t-name]").textContent = t.name;
   $("[data-t-meta]").textContent = `${FORMAT_LABEL[t.format] || t.format} · `
-    + (t.status === "open" ? `open for sign-ups · ${d.players.length} joined`
-       : t.status === "active" ? `round ${t.current_round} of ${t.rounds_total}`
-       : "finished");
+    + (t.status === "open" ? `otevřeno pro přihlášky · přihlášeno ${d.players.length}`
+       : t.status === "active" ? `kolo ${t.current_round} z ${t.rounds_total}`
+       : "ukončeno");
 
   renderControls(d);
   renderChampion(d);
@@ -65,14 +65,14 @@ function renderControls(d) {
   const btns = [];
   if (t.status === "open") {
     btns.push(d.players.some((p) => p.id === d.meId)
-      ? el("button.btn.sm", { onclick: () => act("leave") }, "Leave")
-      : el("button.btn.primary.sm", { onclick: () => act("join") }, "Join"));
+      ? el("button.btn.sm", { onclick: () => act("leave") }, "Opustit")
+      : el("button.btn.primary.sm", { onclick: () => act("join") }, "Přidat se"));
     if (d.canManage) {
-      btns.push(el("button.btn.primary.sm", { onclick: () => act("start") }, "Start tournament"));
-      btns.push(el("button.btn.danger.sm", { onclick: del }, "Delete"));
+      btns.push(el("button.btn.primary.sm", { onclick: () => act("start") }, "Zahájit turnaj"));
+      btns.push(el("button.btn.danger.sm", { onclick: del }, "Smazat"));
     }
   } else if (d.canManage) {
-    btns.push(el("button.btn.danger.sm", { onclick: del }, "Delete"));
+    btns.push(el("button.btn.danger.sm", { onclick: del }, "Smazat"));
   }
   host.replaceChildren(...btns);
 }
@@ -83,7 +83,7 @@ function renderChampion(d) {
     box.hidden = false;
     box.replaceChildren(el("div.champion", {},
       el("span", { style: "font-size:32px" }, "🏆"),
-      el("div", {}, el("div.subtle", {}, "Champion"), el("strong", { style: "font-size:22px" }, d.winnerName))));
+      el("div", {}, el("div.subtle", {}, "Vítěz"), el("strong", { style: "font-size:22px" }, d.winnerName))));
   } else box.hidden = true;
 }
 
@@ -92,15 +92,15 @@ function renderMyMatch(d) {
   if (d.myMatch) {
     box.hidden = false;
     box.replaceChildren(el("div.my-match", {},
-      el("span", {}, "♟ Your match is ready — round " + d.myMatch.round),
-      el("a.btn.primary.sm", { href: `/play.html?game=${d.myMatch.game_id}` }, "Play now")));
+      el("span", {}, "♟ Tvůj zápas je připraven — kolo " + d.myMatch.round),
+      el("a.btn.primary.sm", { href: `/play.html?game=${d.myMatch.game_id}` }, "Hrát nyní")));
   } else box.hidden = true;
 }
 
 function renderPlayers(d) {
   $("[data-players]").replaceChildren(...(d.players.length ? d.players.map((p) =>
-    el("li", {}, el("span", {}, el("strong", {}, p.id === d.meId ? `${p.name} (you)` : p.name)),
-      el("span.elo-pill", {}, `${p.elo}`))) : [el("li.muted", {}, "Nobody's joined yet.")]));
+    el("li", {}, el("span", {}, el("strong", {}, p.id === d.meId ? `${p.name} (ty)` : p.name)),
+      el("span.elo-pill", {}, `${p.elo}`))) : [el("li.muted", {}, "Zatím se nikdo nepřipojil.")]));
 }
 
 /* ── knockout bracket ── */
@@ -125,7 +125,7 @@ function matchBox(m, meId) {
   return el("div", { class: `bm${m.status === "finished" ? " done" : ""}` },
     row(m.white_id, m.white_name, m.status === "finished" && wWin),
     el("div.bm-div"),
-    row(m.black_id, m.result === "bye" ? "(bye)" : m.black_name, m.status === "finished" && bWin && m.result !== "bye"),
+    row(m.black_id, m.result === "bye" ? "(volný los)" : m.black_name, m.status === "finished" && bWin && m.result !== "bye"),
     link ? el("div.bm-actions", {}, link) : "");
 }
 
@@ -134,15 +134,15 @@ function renderStandings(d) {
   $("[data-standings]").replaceChildren(...d.players.map((p, i) =>
     el("li", { class: i === 0 && d.tournament.status === "finished" ? "lead-top" : "" },
       el("span", {}, el("span.lead-rank", {}, `#${i + 1}`),
-        el("strong", { style: "margin-left:8px" }, p.id === d.meId ? `${p.name} (you)` : p.name)),
-      el("span.tag.good", {}, `${p.score} pts`))));
+        el("strong", { style: "margin-left:8px" }, p.id === d.meId ? `${p.name} (ty)` : p.name)),
+      el("span.tag.good", {}, `${p.score} b.`))));
 }
 
 function renderRounds(d) {
   const byRound = groupRounds(d.matches);
   const blocks = [...byRound.keys()].sort((a, b) => a - b).map((r) =>
     el("div.card", { style: "margin-bottom:10px" },
-      el("div.subtle", { style: "margin-bottom:8px" }, `Round ${r}`),
+      el("div.subtle", { style: "margin-bottom:8px" }, `Kolo ${r}`),
       ...byRound.get(r).map((m) => el("div.spread", { style: "padding:5px 0" },
         el("span", {}, pairLabel(m, d.meId)),
         el("span", { style: "display:flex; align-items:center; gap:8px" },
@@ -152,14 +152,14 @@ function renderRounds(d) {
 }
 
 function pairLabel(m, meId) {
-  if (m.result === "bye") return el("span", {}, el("strong", {}, m.white_name), " — bye");
+  if (m.result === "bye") return el("span", {}, el("strong", {}, m.white_name), " — volný los");
   const a = el(m.white_id === meId ? "strong" : "span", {}, m.white_name || "—");
   const b = el(m.black_id === meId ? "strong" : "span", {}, m.black_name || "—");
   return el("span", {}, a, " vs ", b);
 }
 function resultLabel(m) {
-  if (m.status !== "finished") return m.game_status === "active" ? "in progress" : "pending";
-  if (m.result === "bye") return "bye";
+  if (m.status !== "finished") return m.game_status === "active" ? "probíhá" : "nezahájeno";
+  if (m.result === "bye") return "volný los";
   if (m.result === "draw") return "½–½";
   return m.winner_id === m.white_id ? "1–0" : "0–1";
 }
@@ -173,19 +173,19 @@ function groupRounds(matches) {
 }
 function roundLabel(r, total) {
   const fromEnd = total - r;
-  if (fromEnd === 0) return "Final";
-  if (fromEnd === 1) return "Semifinals";
-  if (fromEnd === 2) return "Quarterfinals";
-  return `Round ${r}`;
+  if (fromEnd === 0) return "Finále";
+  if (fromEnd === 1) return "Semifinále";
+  if (fromEnd === 2) return "Čtvrtfinále";
+  return `Kolo ${r}`;
 }
 
 async function act(action) {
   const { ok, data } = await api.post(`/api/tournaments/${tid}/${action}`);
-  if (!ok) alert(data.error || "Something went wrong.");
+  if (!ok) alert(data.error || "Něco se pokazilo.");
   load();
 }
 async function del() {
-  if (!confirm("Delete this tournament?")) return;
+  if (!confirm("Smazat tento turnaj?")) return;
   await api.del(`/api/tournaments/${tid}`);
   location.href = "/arena.html";
 }

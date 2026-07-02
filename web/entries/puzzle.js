@@ -16,11 +16,11 @@ const fail = (m) => { $("[data-err]").hidden = false; $("[data-errmsg]").textCon
 const feedback = (t, cls) => { const f = $("[data-feedback]"); f.textContent = t; f.style.color = cls === "ok" ? "var(--good)" : cls === "no" ? "var(--bad)" : ""; };
 
 (async () => {
-  if (!taskId) return fail("No puzzle specified.");
+  if (!taskId) return fail("Není zadaná žádná úloha.");
   const res = await fetch(`/api/tasks/${taskId}/puzzle`);
-  if (!res.ok) return fail("You need to be logged in, or this puzzle doesn't exist.");
+  if (!res.ok) return fail("Musíš být přihlášen, nebo tato úloha neexistuje.");
   const t = await res.json();
-  if (!t.hasSolution) return fail("This task has no solution set yet.");
+  if (!t.hasSolution) return fail("K této úloze zatím není nastavené řešení.");
   $("[data-card]").hidden = false;
   $("[data-title]").textContent = t.title;
   $("[data-desc]").textContent = t.description || "";
@@ -28,7 +28,7 @@ const feedback = (t, cls) => { const f = $("[data-feedback]"); f.textContent = t
   startFen = t.fen;
   chess = new Chess(startFen);
   solverColor = chess.turn();
-  $("[data-tomove]").textContent = `${solverColor === "w" ? "White" : "Black"} to move — find the best line.`;
+  $("[data-tomove]").textContent = `Na tahu je ${solverColor === "w" ? "bílý" : "černý"} — najdi nejlepší pokračování.`;
   render();
   // Snapshot which badges are already earned so we can celebrate new ones.
   const p = await fetch("/api/me/progress").then((r) => r.ok ? r.json() : null).catch(() => null);
@@ -77,15 +77,15 @@ async function tryMove(from, to) {
     body: JSON.stringify({ ply, move: from + to + (promo || "") }),
   });
   const out = await res.json();
-  if (!out.correct) { feedback("Not the move — try again.", "no"); render(); return; }
+  if (!out.correct) { feedback("To není ten tah — zkus to znovu.", "no"); render(); return; }
   chess.move({ from, to, promotion: promo }); ply++; render();
   if (out.reply) {
     await new Promise((r) => setTimeout(r, 350));
     chess.move({ from: out.reply.slice(0, 2), to: out.reply.slice(2, 4), promotion: out.reply.slice(4) || undefined });
     ply++; render();
   }
-  if (out.done) { solved = true; feedback("✓ Solved! Great work.", "ok"); reward(); }
-  else feedback("Correct — keep going.", "ok");
+  if (out.done) { solved = true; feedback("✓ Vyřešeno! Skvělá práce.", "ok"); reward(); }
+  else feedback("Správně — pokračuj.", "ok");
 }
 
 // Celebrate: show XP gained, the kid's rank, and any newly unlocked badge.
@@ -95,13 +95,13 @@ async function reward() {
   box.replaceChildren(el("div.reward-xp", {}, `+${difficulty * 10} XP`));
   const p = await fetch("/api/me/progress").then((r) => r.ok ? r.json() : null).catch(() => null);
   if (!p?.level) return;
-  box.append(el("div.reward-rank", {}, `Level ${p.level.num} · ${p.level.name}`));
+  box.append(el("div.reward-rank", {}, `Úroveň ${p.level.num} · ${p.level.name}`));
   const fresh = (p.badges || []).filter((b) => b.earned && !badgesBefore.has(b.key));
   for (const b of fresh) {
     box.append(el("div.reward-badge", {}, el("span.reward-badge-icon", {}, b.icon),
-      el("span", {}, el("strong", {}, "New badge: "), b.name)));
+      el("span", {}, el("strong", {}, "Nový odznak: "), b.name)));
     badgesBefore.add(b.key);
   }
 }
 
-$("[data-reset]").onclick = () => { chess = new Chess(startFen); ply = 0; selected = null; solved = false; feedback("Make your move."); $("[data-reward]").hidden = true; render(); };
+$("[data-reset]").onclick = () => { chess = new Chess(startFen); ply = 0; selected = null; solved = false; feedback("Zahraj svůj tah."); $("[data-reward]").hidden = true; render(); };
