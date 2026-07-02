@@ -1,76 +1,84 @@
 <!doctype html>
-<html lang="en">
+<html lang="cs">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Arena · Chess Club</title>
+    <title>Aréna · Šachy na Smetance</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/app.css" />
   </head>
   <body>
     <header data-nav></header>
 
-    <main class="wrap" data-app hidden>
-      <h1 style="font-size:30px; margin-bottom:2px">Arena</h1>
-      <p class="muted" style="margin-top:0">Challenge other players to rated games and climb the ratings.</p>
-
-      <section class="card" style="margin-bottom:16px">
-        <div class="spread">
-          <div><div class="subtle">Your rating</div><div class="elo-big" data-my-elo>—</div></div>
+    <main class="wrap wide" data-app hidden>
+      <div class="arena-hero">
+        <div>
+          <div class="subtle">Tvůj rating</div>
+          <div class="elo-big" data-my-elo>—</div>
           <div data-my-rank class="subtle"></div>
         </div>
-      </section>
+        <div>
+          <h1 style="font-size:26px; margin-bottom:2px">Aréna</h1>
+          <p class="muted" style="margin:0">Vyzvi ostatní hráče na hodnocené partie a posunuj se v žebříčku.</p>
+        </div>
+      </div>
 
-      <section class="card" data-challenges-card style="margin-bottom:16px" hidden>
-        <h2 style="font-size:18px">Challenges</h2>
-        <div data-challenges></div>
-      </section>
+      <div class="arena-grid">
+        <div class="stack">
+          <section class="card">
+            <div class="spread">
+              <h2 style="font-size:18px; margin:0">Turnaje</h2>
+              <button class="btn primary sm" data-host hidden>+ Založit turnaj</button>
+            </div>
 
-      <section class="card" style="margin-bottom:16px">
-        <div class="spread">
-          <h2 style="font-size:18px; margin:0">Tournaments</h2>
-          <button class="btn primary sm" data-host hidden>+ Host tournament</button>
+            <div class="card" data-host-form hidden style="margin-top:12px; background:var(--panel-2)">
+              <div class="grid two" style="margin-bottom:10px">
+                <label class="field" style="margin:0"><span>Název</span><input data-t-name placeholder="Mistrovství klubu" /></label>
+                <label class="field" style="margin:0"><span>Formát</span>
+                  <select data-t-format>
+                    <option value="knockout">Vyřazovací (pavouk)</option>
+                    <option value="roundrobin">Kruhový systém (každý s každým)</option>
+                    <option value="swiss">Švýcarský systém (podle skóre)</option>
+                  </select>
+                </label>
+              </div>
+              <label class="field" data-t-rounds-wrap hidden><span>Počet kol (švýcarský systém, volitelné)</span><input data-t-rounds type="number" min="1" max="15" placeholder="automaticky" /></label>
+              <label class="field"><span>Kdo ho uvidí a může se přidat?</span>
+                <select data-t-audience>
+                  <option value="group">Konkrétní skupina</option>
+                  <option value="kids">Konkrétní děti</option>
+                  <option value="all">Všichni</option>
+                </select>
+              </label>
+              <label class="field" data-t-group-wrap><span>Skupina</span><select data-t-group></select></label>
+              <label class="field" data-t-kids-wrap hidden><span>Děti — vyber víc přes Ctrl/Cmd + klik</span><select data-t-kids multiple size="6"></select></label>
+              <div class="row"><button class="btn primary sm" data-t-create>Vytvořit</button><button class="btn sm ghost" data-host-cancel>Zrušit</button></div>
+            </div>
+
+            <ul class="list" data-tournaments style="margin-top:12px"></ul>
+          </section>
+
+          <section class="card">
+            <h2 style="font-size:18px">Žebříček</h2>
+            <p class="subtle" style="margin-bottom:12px">Vyzvi kohokoli na hodnocenou partii.</p>
+            <ul class="list" data-leaderboard></ul>
+          </section>
         </div>
 
-        <div class="card" data-host-form hidden style="margin-top:12px; background:var(--panel-2)">
-          <div class="grid two" style="margin-bottom:10px">
-            <label class="field" style="margin:0"><span>Name</span><input data-t-name placeholder="Club Championship" /></label>
-            <label class="field" style="margin:0"><span>Format</span>
-              <select data-t-format>
-                <option value="knockout">Single-elimination (bracket)</option>
-                <option value="roundrobin">Round-robin (all play all)</option>
-                <option value="swiss">Swiss (paired by score)</option>
-              </select>
-            </label>
-          </div>
-          <label class="field" data-t-rounds-wrap hidden><span>Rounds (Swiss, optional)</span><input data-t-rounds type="number" min="1" max="15" placeholder="auto" /></label>
-          <label class="field"><span>Who can see &amp; join?</span>
-            <select data-t-audience>
-              <option value="group">A specific group</option>
-              <option value="kids">Specific kids</option>
-              <option value="all">Everyone</option>
-            </select>
-          </label>
-          <label class="field" data-t-group-wrap><span>Group</span><select data-t-group></select></label>
-          <label class="field" data-t-kids-wrap hidden><span>Kids — Ctrl/Cmd-click to pick several</span><select data-t-kids multiple size="6"></select></label>
-          <div class="row"><button class="btn primary sm" data-t-create>Create</button><button class="btn sm ghost" data-host-cancel>Cancel</button></div>
-        </div>
+        <aside class="stack">
+          <section class="card" data-challenges-card hidden>
+            <h2 style="font-size:18px">Výzvy</h2>
+            <div data-challenges></div>
+          </section>
 
-        <ul class="list" data-tournaments style="margin-top:12px"></ul>
-      </section>
-
-      <section class="card" style="margin-bottom:16px">
-        <h2 style="font-size:18px">Ratings</h2>
-        <p class="subtle" style="margin-bottom:12px">Challenge anyone to a rated game.</p>
-        <ul class="list" data-leaderboard></ul>
-      </section>
-
-      <section class="card">
-        <h2 style="font-size:18px">Your recent games</h2>
-        <ul class="list" data-history></ul>
-      </section>
+          <section class="card">
+            <h2 style="font-size:18px">Tvé poslední partie</h2>
+            <ul class="list" data-history></ul>
+          </section>
+        </aside>
+      </div>
     </main>
 
     <script type="module" src="/assets/arena.js"></script>

@@ -25,7 +25,7 @@ async function submit(e, url) {
   e.preventDefault();
   const body = Object.fromEntries(new FormData(e.target));
   const { ok, data } = await api.post(url, body);
-  if (!ok) return show(data.error || "Something went wrong.");
+  if (!ok) return show(data.error || "Něco se pokazilo.");
   if (data.user.status === "pending") return void (location.href = "/pending.html");
   location.href = data.user.role === "kid" ? "/dashboard.html" : "/admin.html";
 }

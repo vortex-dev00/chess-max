@@ -21,4 +21,4 @@ export function el(spec, props = {}, ...children) {
 }
 
 export const fmtDate = (ms) =>
-  ms ? new Date(ms).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "TBA";
+  ms ? new Date(ms).toLocaleString("cs-CZ", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "termín TBA";

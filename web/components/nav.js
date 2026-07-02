@@ -12,19 +12,19 @@ export async function mountNav(active = "") {
   const link = (href, label, key) =>
     el("a", { href, class: `nav-link${active === key ? " is-active" : ""}` }, label);
 
-  const links = [link("/play.html", "Play", "play")];
+  const links = [link("/play.html", "Hrát", "play")];
   if (me) {
     const dash = me.role === "kid" ? "/dashboard.html" : "/admin.html";
-    links.push(link(dash, me.role === "kid" ? "Dashboard" : "Admin", "dash"));
-    links.push(link("/arena.html", "Arena", "arena"));
-    links.push(link("/events.html", "Events", "events"));
-    links.push(el("button.nav-link.as-link", { onclick: logout }, "Log out"));
+    links.push(link(dash, me.role === "kid" ? "Přehled" : "Administrace", "dash"));
+    links.push(link("/arena.html", "Aréna", "arena"));
+    links.push(link("/events.html", "Akce", "events"));
+    links.push(el("button.nav-link.as-link", { onclick: logout }, "Odhlásit se"));
   } else {
-    links.push(link("/login.html", "Log in", "login"));
+    links.push(link("/login.html", "Přihlásit se", "login"));
   }
 
   host.replaceChildren(
-    el("a.brand", { href: "/" }, el("span.brand-mark", {}, "♞"), el("span", {}, "Chess Club")),
+    el("a.brand", { href: "/" }, el("span.brand-mark", {}, "♞"), el("span", {}, "Šachy na Smetance")),
     el("nav.nav-links", {}, ...links),
   );
 

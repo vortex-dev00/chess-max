@@ -7,9 +7,9 @@ await mountNav("events");
 const me = await requireRole();   // any signed-in user
 if (me) main();
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const MONTHS = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"];
+const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
+const MONTHS = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen",
+  "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"];
 
 let canManage = false;
 let events = [];
@@ -38,8 +38,8 @@ async function load() {
 /* ── date helpers (local time) ── */
 const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 const keyOfMs = (ms) => dayKey(new Date(ms));
-const fmtTime = (ms) => new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-const fmtFull = (ms) => new Date(ms).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+const fmtTime = (ms) => new Date(ms).toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" });
+const fmtFull = (ms) => new Date(ms).toLocaleString("cs-CZ", { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 /* ── calendar grid ── */
 function render() {
@@ -103,21 +103,21 @@ function renderDetail() {
   const goingBtn = el("button", {
     class: `btn${e.myStatus === "going" ? " primary" : ""}`,
     onclick: () => setStatus("going"),
-  }, e.myStatus === "going" ? "Going ✓" : "Going");
+  }, e.myStatus === "going" ? "Jdu ✓" : "Jdu");
   const maybeBtn = el("button", {
     class: `btn${e.myStatus === "maybe" ? " warn" : ""}`,
     onclick: () => setStatus("maybe"),
-  }, e.myStatus === "maybe" ? "Maybe ✓" : "Maybe");
+  }, e.myStatus === "maybe" ? "Možná ✓" : "Možná");
 
   // Two attendee rows: firm yeses, and people still thinking about it.
   const nameTags = (people) => people.map((a) => el(a.id === me.id ? "span.tag.good" : "span.tag", {}, a.name));
   const goingRow = e.going.length
     ? el("div.row", { style: "gap:6px; margin-top:10px; flex-wrap:wrap" },
-        el("span.subtle", {}, `${e.going.length} going:`), ...nameTags(e.going))
-    : el("div.subtle", { style: "margin-top:10px" }, "Nobody's confirmed yet — be the first!");
+        el("span.subtle", {}, `${e.going.length} jde:`), ...nameTags(e.going))
+    : el("div.subtle", { style: "margin-top:10px" }, "Zatím se nikdo nepotvrdil — buď první!");
   const maybeRow = e.maybe.length
     ? el("div.row", { style: "gap:6px; margin-top:8px; flex-wrap:wrap" },
-        el("span.subtle", {}, `${e.maybe.length} thinking about it:`),
+        el("span.subtle", {}, `${e.maybe.length} to zvažuje:`),
         ...e.maybe.map((a) => el("span.tag", { class: a.id === me.id ? "tag warn" : "tag" }, a.name)))
     : "";
 
@@ -127,10 +127,10 @@ function renderDetail() {
         el("h2", { style: "margin:0; font-size:20px" }, e.title),
         el("div.subtle", { style: "margin-top:2px" }, `${fmtFull(e.starts_at)}${e.location ? " · " + e.location : ""}`)),
       el("div.row", { style: "gap:8px" },
-        past ? el("span.tag", {}, "past") : el("div.row", { style: "gap:8px" }, goingBtn, maybeBtn),
+        past ? el("span.tag", {}, "proběhlo") : el("div.row", { style: "gap:8px" }, goingBtn, maybeBtn),
         canManage ? el("button.btn.danger.sm", {
-          onclick: async () => { if (confirm(`Delete "${e.title}"?`)) { await api.del(`/api/events/${e.id}`); selectedId = null; await load(); } },
-        }, "Delete") : "")),
+          onclick: async () => { if (confirm(`Smazat „${e.title}“?`)) { await api.del(`/api/events/${e.id}`); selectedId = null; await load(); } },
+        }, "Smazat") : "")),
     e.description ? el("p", { style: "white-space:pre-wrap; margin:12px 0 0" }, e.description) : "",
     goingRow, maybeRow));
 }
@@ -155,14 +155,14 @@ function openCreate(day) {
 async function createEvent() {
   const title = $("[data-ev-title]").value.trim();
   const time = $("[data-ev-time]").value;
-  if (!title || !time) { alert("Title and date/time are required."); return; }
+  if (!title || !time) { alert("Název a datum/čas jsou povinné."); return; }
   const { ok, data } = await api.post("/api/events", {
     title,
     starts_at: new Date(time).getTime(),
     location: $("[data-ev-loc]").value.trim(),
     description: $("[data-ev-desc]").value.trim(),
   });
-  if (!ok) { alert(data.error || "Could not create event."); return; }
+  if (!ok) { alert(data.error || "Akci se nepodařilo vytvořit."); return; }
   $("[data-ev-title]").value = $("[data-ev-time]").value = $("[data-ev-loc]").value = $("[data-ev-desc]").value = "";
   $("[data-create]").hidden = true;
   // Jump the calendar to the new event's month and select it.

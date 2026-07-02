@@ -1,47 +1,50 @@
 <!doctype html>
-<html lang="en">
+<html lang="cs">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Events · Chess Club</title>
+    <title>Akce · Šachy na Smetance</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/app.css" />
   </head>
   <body>
     <header data-nav></header>
 
-    <main class="wrap" data-app hidden>
+    <main class="wrap wide" data-app hidden>
       <div class="spread">
-        <h1 style="font-size:30px; margin:0">Events</h1>
-        <button class="btn primary sm" data-new hidden>+ New event</button>
+        <h1 style="font-size:30px; margin:0">Akce</h1>
+        <button class="btn primary sm" data-new hidden>+ Nová akce</button>
       </div>
-      <p class="muted" style="margin-top:6px">Tournaments, meetups, and club days. Join the ones you want — and see who else is going.</p>
+      <p class="muted" style="margin-top:6px">Turnaje, srazy a klubové dny. Přihlas se na ty, které chceš — a uvidíš, kdo další jde.</p>
 
       <!-- staff-only: create an event (toggled by + New event) -->
       <section class="card" data-create hidden style="margin:8px 0 16px">
-        <div class="spread"><h2 style="font-size:18px; margin:0">New event</h2><button class="btn sm ghost" data-cancel>Cancel</button></div>
+        <div class="spread"><h2 style="font-size:18px; margin:0">Nová akce</h2><button class="btn sm ghost" data-cancel>Zrušit</button></div>
         <div class="grid two" style="margin:12px 0 10px">
-          <label class="field" style="margin:0"><span>Title</span><input data-ev-title placeholder="Spring Tournament" /></label>
-          <label class="field" style="margin:0"><span>Date &amp; time</span><input data-ev-time type="datetime-local" /></label>
+          <label class="field" style="margin:0"><span>Název</span><input data-ev-title placeholder="Jarní turnaj" /></label>
+          <label class="field" style="margin:0"><span>Datum a čas</span><input data-ev-time type="datetime-local" /></label>
         </div>
-        <label class="field"><span>Location</span><input data-ev-loc placeholder="City Chess Hall" /></label>
-        <label class="field"><span>Details</span><textarea data-ev-desc style="min-height:60px" placeholder="What it is, who can come, what to bring…"></textarea></label>
-        <button class="btn primary sm" data-ev-create>Create event</button>
+        <label class="field"><span>Místo</span><input data-ev-loc placeholder="Šachový sál" /></label>
+        <label class="field"><span>Podrobnosti</span><textarea data-ev-desc style="min-height:60px" placeholder="Co to je, kdo může přijít, co si vzít s sebou…"></textarea></label>
+        <button class="btn primary sm" data-ev-create>Vytvořit akci</button>
       </section>
 
-      <!-- calendar -->
-      <div class="cal-toolbar">
-        <button class="btn sm" data-prev aria-label="Previous month">‹</button>
-        <strong class="cal-month" data-month>—</strong>
-        <button class="btn sm" data-next aria-label="Next month">›</button>
-        <button class="btn sm ghost" data-today>Today</button>
-      </div>
-      <div class="cal" data-cal></div>
+      <div class="events-grid">
+        <div>
+          <div class="cal-toolbar">
+            <button class="btn sm" data-prev aria-label="Předchozí měsíc">‹</button>
+            <strong class="cal-month" data-month>—</strong>
+            <button class="btn sm" data-next aria-label="Další měsíc">›</button>
+            <button class="btn sm ghost" data-today>Dnes</button>
+          </div>
+          <div class="cal" data-cal></div>
+        </div>
 
-      <!-- selected-event detail -->
-      <div data-detail></div>
+        <!-- selected-event detail -->
+        <div data-detail></div>
+      </div>
     </main>
 
     <script type="module" src="/assets/events.js"></script>

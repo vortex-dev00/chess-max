@@ -1,31 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="cs">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Chess Club</title>
+    <title>Šachy na Smetance</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/app.css" />
+    <link rel="stylesheet" href="/styles/board.css" />
   </head>
   <body>
     <header data-nav></header>
 
-    <main class="wrap">
-      <section style="text-align:center; padding:72px 0 36px">
-        <h1 style="font-size:clamp(42px,8vw,78px)">Knights Chess Club</h1>
-        <p class="muted" style="font-size:clamp(16px,2.4vw,21px); max-width:620px; margin:0 auto 26px">
-          Where young minds learn to think three moves ahead.
-        </p>
+    <main class="wrap wide">
+      <section class="hero">
+        <div class="hero-board">
+          <div class="mini-board" style="width:230px; margin:0 auto">
+            <div class="ms light"><span class="mp b">♜</span></div><div class="ms dark"><span class="mp b">♞</span></div><div class="ms light"><span class="mp b">♝</span></div><div class="ms dark"><span class="mp b">♛</span></div><div class="ms light"><span class="mp b">♚</span></div><div class="ms dark"><span class="mp b">♝</span></div><div class="ms light"><span class="mp b">♞</span></div><div class="ms dark"><span class="mp b">♜</span></div>
+            <div class="ms dark"><span class="mp b">♟</span></div><div class="ms light"><span class="mp b">♟</span></div><div class="ms dark"><span class="mp b">♟</span></div><div class="ms light"><span class="mp b">♟</span></div><div class="ms dark"><span class="mp b">♟</span></div><div class="ms light"><span class="mp b">♟</span></div><div class="ms dark"><span class="mp b">♟</span></div><div class="ms light"><span class="mp b">♟</span></div>
+            <div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div>
+            <div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div>
+            <div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div>
+            <div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div><div class="ms dark"></div><div class="ms light"></div>
+            <div class="ms light"><span class="mp w">♟</span></div><div class="ms dark"><span class="mp w">♟</span></div><div class="ms light"><span class="mp w">♟</span></div><div class="ms dark"><span class="mp w">♟</span></div><div class="ms light"><span class="mp w">♟</span></div><div class="ms dark"><span class="mp w">♟</span></div><div class="ms light"><span class="mp w">♟</span></div><div class="ms dark"><span class="mp w">♟</span></div>
+            <div class="ms dark"><span class="mp w">♜</span></div><div class="ms light"><span class="mp w">♞</span></div><div class="ms dark"><span class="mp w">♝</span></div><div class="ms light"><span class="mp w">♛</span></div><div class="ms dark"><span class="mp w">♚</span></div><div class="ms light"><span class="mp w">♝</span></div><div class="ms dark"><span class="mp w">♞</span></div><div class="ms light"><span class="mp w">♜</span></div>
+          </div>
+        </div>
+        <h1>Šachy na Smetance</h1>
+        <p class="muted">Klub, kde mladé mysli myslí o tři tahy dopředu.</p>
         <div class="row" style="justify-content:center">
-          <a class="btn primary" href="/login.html">Join the club</a>
-          <a class="btn ghost" href="/play.html">Play a game</a>
+          <a class="btn primary" href="/login.html">Přidat se do klubu</a>
+          <a class="btn ghost" href="/play.html">Zahrát si</a>
+        </div>
+      </section>
+
+      <section class="feature-grid">
+        <div class="feature-card">
+          <div class="fc-icon">♟</div>
+          <h3>Hraj online</h3>
+          <p>Vyzvi kamaráda nebo spoluhráče z klubu na hodnocenou partii přímo v prohlížeči.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🧩</div>
+          <h3>Řeš úlohy</h3>
+          <p>Taktiky zadané trenérem — od první vidličky až po skutečné maty ve dvou tazích.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🏆</div>
+          <h3>Soutěž v turnajích</h3>
+          <p>Pavouky, kruhové systémy i švýcarský systém — pořádané přímo v klubu.</p>
+        </div>
+      </section>
+
+      <section class="steps">
+        <div class="step">
+          <h3>Zaregistruj se</h3>
+          <p>Vytvoř si účet — trenér ho schválí, než získáš plný přístup.</p>
+        </div>
+        <div class="step">
+          <h3>Přidej se do skupiny</h3>
+          <p>Trenér tě přidá do tréninkové skupiny s lekcemi a hodnocením.</p>
+        </div>
+        <div class="step">
+          <h3>Začni stoupat</h3>
+          <p>Řeš úlohy, hraj hodnocené partie a vydobývej si svou pozici v žebříčku.</p>
         </div>
       </section>
     </main>
 
-    <footer>Built clean on Cloudflare · <a href="/play.html">Play online</a></footer>
+    <footer>Postaveno na Cloudflare · <a href="/play.html">Hrát online</a></footer>
 
     <script type="module" src="/assets/landing.js"></script>
   </body>
